@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { options, ApiPromise, WsProvider, Keyring } from "@polkadot/api";
+import { ApiPromise, WsProvider, Keyring } from "@polkadot/api";
 import { ContractPromise } from "@polkadot/api-contract";
 import {
+  options,
   OnChainRegistry,
   signCertificate,
   PinkContractPromise,
