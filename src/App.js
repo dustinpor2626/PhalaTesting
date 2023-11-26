@@ -9,19 +9,19 @@ import {
 
 const App = () => {
   const contractId =
-    "0x910ca399afad1f85d93e22e64234737425fa9ab02824b10ccf385eddba64ed8f"; // Replace with the actual address of your Ink contract
+    "0x06ae9b10b8166d7f7cc57fdb77e891cb5cb22570646c41c0295254845fbb6357"; // Replace with the actual address of your Ink contract
   const metadata = getMetaData();
   const [data, updateData] = useState(null);
 
   useEffect(() => {
     ApiPromise.create(
       options({
-        provider: new WsProvider("wss://poc5.phala.network/ws"),
+        provider: new WsProvider("wss://poc6.phala.network/ws"),
         noInitWarn: true,
       })
     ).then((api) => {
       const keyring = new Keyring({ type: "sr25519" });
-      const pair = keyring.addFromUri("//Alice");
+      const pair = keyring.addFromUri("//sourav singh");
       asyncCall(api, pair);
     });
 
@@ -66,7 +66,7 @@ const App = () => {
         address: pair.address,
       });
 
-      await result.waitFinalized();
+      //await result.waitFinalized();
       //console.log(result);
     }
 
@@ -76,11 +76,7 @@ const App = () => {
   return <div>Hello {data ? "True" : "False"}</div>;
 };
 
-
-
 /*
-
-
 
 
 
