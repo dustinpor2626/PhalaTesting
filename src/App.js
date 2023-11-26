@@ -6,6 +6,11 @@ import {
   signCertificate,
   PinkContractPromise,
 } from "@phala/sdk";
+import {
+  web3Accounts,
+  web3Enable,
+  web3FromSource,
+} from "@polkadot/extension-dapp";
 
 const App = () => {
   const contractId =
@@ -20,12 +25,18 @@ const App = () => {
         noInitWarn: true,
       })
     ).then((api) => {
-      const keyring = new Keyring({ type: "sr25519" });
-      const pair = keyring.addFromUri("//sourav singh");
-      asyncCall(api, pair);
+      asyncCall(api);
     });
 
-    async function asyncCall(api, pair) {
+    async function asyncCall(api) {
+      const extensions = await web3Enable("My cool Phat Contract dApp");
+
+      const availableAccounts = await web3Accounts();
+      const account = availableAccounts[3]; // assume you choice the first visible account.
+      const injector = await web3FromSource(account.meta.source);
+      const signer = injector.signer;
+      const cert = await signCertificate({ signer, account });
+
       const phatRegistryTemp = await OnChainRegistry.create(api);
       const contractKey = await phatRegistryTemp.getContractKeyOrFail(
         contractId
@@ -37,7 +48,7 @@ const App = () => {
         contractId,
         contractKey
       );
-      const cert = await signCertificate({ pair });
+      //const cert = await signCertificate({ pair });
       /*
       // **** For Read Operation***
 
@@ -49,9 +60,14 @@ const App = () => {
       updateData(output.value.isTrue);
       
       */
-      console.log(pair.address);
+      const keyring = new Keyring({ type: "sr25519" });
+      const pair = keyring.addFromUri(
+        "cycle ribbon inject claim success title anger brave equip range remove obey"
+      );
+
+      console.log(account.address);
       const { gasRequired, storageDeposit } = await contract.query.flip(
-        pair.address,
+        account.address,
         { cert }
       );
       const options = {
@@ -60,14 +76,16 @@ const App = () => {
           ? storageDeposit.asCharge
           : null,
       };
+
+      console.log(pair.address);
       const result = await contract.send.flip({
         pair,
         cert,
         address: pair.address,
       });
 
-      //await result.waitFinalized();
-      //console.log(result);
+      await result.waitFinalized();
+      console.log(result);
     }
 
     return () => {};
@@ -83,9 +101,9 @@ const App = () => {
 
 
 
+candy monster burger drop solve supreme ethics dance nominee zoo educate retire
 
-
-
+cycle ribbon inject claim success title anger brave equip range remove obey
 
 
 
