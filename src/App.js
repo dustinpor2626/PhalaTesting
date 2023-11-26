@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { ApiPromise, WsProvider, Keyring } from "@polkadot/api";
-import { ContractPromise } from "@polkadot/api-contract";
 import {
   options,
   OnChainRegistry,
@@ -9,56 +8,97 @@ import {
 } from "@phala/sdk";
 
 const App = () => {
-  const [api, setApi] = useState(null);
-  const [keyring, setKeyring] = useState(null);
-  const [contract, setContract] = useState(null);
-  const [phatRegistry, setPhatRegistry] = useState(null);
   const contractId =
-    "0x795b0df111c4248662e5051a205de06adc3a952c99816011b3f826e834c12071"; // Replace with the actual address of your Ink contract
+    "0x910ca399afad1f85d93e22e64234737425fa9ab02824b10ccf385eddba64ed8f"; // Replace with the actual address of your Ink contract
   const metadata = getMetaData();
-  //const pair = keyring.addFromUri("//Alice");
-  //const abi = JSON.parse(fs.readFileSync("./flipper.json", "utf-8"));
+  const [data, updateData] = useState(null);
 
   useEffect(() => {
-    const provider = new WsProvider("wss://poc5.phala.network/ws"); // Replace with your node's WebSocket endpoint
     ApiPromise.create(
       options({
-        provider: new WsProvider(provider),
+        provider: new WsProvider("wss://poc5.phala.network/ws"),
         noInitWarn: true,
       })
     ).then((api) => {
-      setApi(api);
-      setKeyring(new Keyring({ type: "sr25519" }));
-      console.log(api);
-      asyncCall();
+      const keyring = new Keyring({ type: "sr25519" });
+      const pair = keyring.addFromUri("//Alice");
+      asyncCall(api, pair);
     });
 
-    async function asyncCall() {
+    async function asyncCall(api, pair) {
       const phatRegistryTemp = await OnChainRegistry.create(api);
-      //setPhatRegistry(phatRegistryTemp);
-      /* const contractKey = await phatRegistry.getContractKeyOrFail(contractId);
-      const contractTemp = new PinkContractPromise(
+      const contractKey = await phatRegistryTemp.getContractKeyOrFail(
+        contractId
+      );
+      const contract = new PinkContractPromise(
         api,
-        phatRegistry,
+        phatRegistryTemp,
         metadata,
         contractId,
         contractKey
       );
-      setContract(contractTemp);*/
-      //const cert = await signCertificate({ pair, api });
-      console.log(contract);
+      const cert = await signCertificate({ pair });
+      /*
+      // **** For Read Operation***
+
+      const { gasRequired, storageDeposit, result, output } =
+        await contract.query.get(pair.address, { cert });
+
+      console.log(output.value);
+      console.log(output.value.isTrue);
+      updateData(output.value.isTrue);
+      
+      */
+      console.log(pair.address);
+      const { gasRequired, storageDeposit } = await contract.query.flip(
+        pair.address,
+        { cert }
+      );
+      const options = {
+        gasLimit: gasRequired.refTime,
+        storageDepositLimit: storageDeposit.isCharge
+          ? storageDeposit.asCharge
+          : null,
+      };
+      const result = await contract.send.flip({
+        pair,
+        cert,
+        address: pair.address,
+      });
+
+      await result.waitFinalized();
+      //console.log(result);
     }
 
-    return () => {
-      if (api) api.disconnect();
-    };
+    return () => {};
   }, []);
 
-  // Rest of your cod
-
-  return <div>{/* Your React component UI */}</div>;
+  return <div>Hello {data ? "True" : "False"}</div>;
 };
 
+
+
+/*
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*/
 function getMetaData() {
   const metadata = {
     source: {
